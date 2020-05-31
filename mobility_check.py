@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[37]:
+# In[2]:
 
 
 import numpy as np
 import pandas as pd
 from datetime import datetime as dt
-from googlemaps import GoogleMaps
+import googlemaps
 
 
 # In[41]:
@@ -19,16 +19,27 @@ df = df.replace(np.nan, '', regex=True)
 df
 
 
-# In[ ]:
+# In[20]:
 
 
 def get_geo_coordinates(address):
-    gmaps = GoogleMaps(api_key)
-    lat,lng = gmaps.address_to_latlng(address)
-    return (lat, lng)
+    """
+    param: address is the address of the location
+    """
+    gmaps = googlemaps.Client(key='AIzaSyAstu56DT6WjhZoqwSjV7FyT1e_r-PM9HI')
+    geocode_result = gmaps.geocode(address)
+    lat = geocode_result[0]["geometry"]["location"]['lat']
+    lng = geocode_result[0]["geometry"]["location"]['lng']
+    return (lat, lng) 
 
 
-# In[48]:
+# In[21]:
+
+
+get_geo_coordinates("United States")
+
+
+# In[23]:
 
 
 #Get all data
@@ -36,6 +47,7 @@ df = pd.read_csv("https://www.gstatic.com/covid19/mobility/Global_Mobility_Repor
 df = df.fillna(method='ffill')
 df = df.replace(np.nan, '', regex=True)
 place_data = {}
+coordinates_data = {}
 print((dt.strptime(df.iloc[2]["date"],'%Y-%m-%d')-dt.strptime(df.iloc[0]["date"],'%Y-%m-%d')).total_seconds())
 for i in range(len(df)-1):
     row_one = df.iloc[i]
@@ -48,7 +60,10 @@ for i in range(len(df)-1):
         address += df.iloc[i]["sub_region_2"] + " "
         print(address)
         place_data[address] = row_one["retail_and_recreation_percent_change_from_baseline"] + row_one["grocery_and_pharmacy_percent_change_from_baseline"] + row_one["parks_percent_change_from_baseline"] + row_one["transit_stations_percent_change_from_baseline"] + row_one["workplaces_percent_change_from_baseline"] + row_one["residential_percent_change_from_baseline"]
-print(place_data)
+        coordinates = get_geo_coordinates(address)
+        print(coordinates)
+        coordinates_data[coordinates] = row_one["retail_and_recreation_percent_change_from_baseline"] + row_one["grocery_and_pharmacy_percent_change_from_baseline"] + row_one["parks_percent_change_from_baseline"] + row_one["transit_stations_percent_change_from_baseline"] + row_one["workplaces_percent_change_from_baseline"] + row_one["residential_percent_change_from_baseline"]
+print(coordinates_data)
 
 
 # In[ ]:
@@ -59,6 +74,7 @@ df = pd.read_csv("https://www.gstatic.com/covid19/mobility/Global_Mobility_Repor
 df = df.fillna(method='ffill')
 df = df.replace(np.nan, '', regex=True)
 place_data = {}
+coordinates_data = {}
 print((dt.strptime(df.iloc[2]["date"],'%Y-%m-%d')-dt.strptime(df.iloc[0]["date"],'%Y-%m-%d')).total_seconds())
 for i in range(len(df)-1):
     row_one = df.iloc[i]
@@ -72,6 +88,9 @@ for i in range(len(df)-1):
             address += df.iloc[i]["sub_region_2"] + " "
             print(address)
             place_data[address] = row_one["retail_and_recreation_percent_change_from_baseline"] + row_one["grocery_and_pharmacy_percent_change_from_baseline"] + row_one["parks_percent_change_from_baseline"] + row_one["transit_stations_percent_change_from_baseline"] + row_one["workplaces_percent_change_from_baseline"] + row_one["residential_percent_change_from_baseline"]
+            coordinates = get_geo_coordinates(address)
+            coordinates_data[coordinates] = row_one["retail_and_recreation_percent_change_from_baseline"] + row_one["grocery_and_pharmacy_percent_change_from_baseline"] + row_one["parks_percent_change_from_baseline"] + row_one["transit_stations_percent_change_from_baseline"] + row_one["workplaces_percent_change_from_baseline"] + row_one["residential_percent_change_from_baseline"]
+print(coordinates_data)
 print(place_data)
 
 
